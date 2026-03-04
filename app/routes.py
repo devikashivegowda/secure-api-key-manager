@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 from app.services import generate_api_key, hash_api_key
 from app.models import APIKey
@@ -25,3 +25,22 @@ def create_key(db: Session = Depends(get_db)):
     return {
         "api_key": api_key
     }
+
+@router.get("/secure-data")
+def protected_data(x_api_key: str = Header(None)):
+    return {"message": "You accessed protected data"}
+
+@router.post("/revoke-key")
+def revoke_key(api_key: str, db: Session = Depends(get_db)):
+
+    hashed_key = hash_api_key(api_key)
+
+    key = db.query(APIKey).filter(APIKey.hashed_key == hashed_key).first()
+
+    if not key:
+        raise HTTPException(status_code=404, detail="API key not found")
+
+    key.is_active = False
+    db.commit()
+
+    return {"message": "API key revoked successfully"}

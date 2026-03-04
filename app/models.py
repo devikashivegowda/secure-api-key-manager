@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from datetime import datetime
 from database.db import Base
 
@@ -8,3 +8,4 @@ class APIKey(Base):
     id = Column(Integer, primary_key=True, index=True)
     hashed_key = Column(String, unique=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
